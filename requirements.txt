@@ -1,0 +1,6 @@
+nose
+numpy
+matplotlib.pyplot
+os
+sys
+atexit
