@@ -64,8 +64,8 @@ class ColorClusturing:
 	# widthTemp = width of matrix
 	# heightTemp = height of matrix
 	def create_file(self, inputMatrix, widthTemp, heightTemp):
-		self.inputArray = np.zeros(shape=(widthTemp, heightTemp))
-		self.assignArray = np.zeros(shape=(widthTemp, heightTemp))
+		self.inputArray = np.zeros(shape=(heightTemp, widthTemp))
+		self.assignArray = np.zeros(shape=(heightTemp, widthTemp))
 		self.inputArray = inputMatrix
 		self.widthMatrix = widthTemp
 		self.heightMatrix = heightTemp
@@ -74,9 +74,9 @@ class ColorClusturing:
 	def scan_cluster(self):
 		for self.yIndex in xrange(0,  self.heightMatrix):
 			for self.xIndex in xrange(0, self.widthMatrix):
-				if(self.assignArray[self.xIndex, self.yIndex] == 0):
+				if(self.assignArray[self.yIndex, self.xIndex] == 0):
 					self.currentAssigned = 0
-					self.currentValue = self.inputArray[self.xIndex, self.yIndex]
+					self.currentValue = self.inputArray[self.yIndex, self.xIndex]
 
 					# scan of location previously assigned
 					self.processed_location((self.xIndex - 1), (self.yIndex   ))
@@ -92,7 +92,7 @@ class ColorClusturing:
 
 				if(self.currentAssigned == 0):
 					self.assignCounter += 1
-					self.assignArray[self.xIndex, self.yIndex] = self.assignCounter
+					self.assignArray[self.yIndex, self.xIndex] = self.assignCounter
 					self.insert_new_match(self.assignCounter)
 
 		self.generate_output_array(self.resultStringList)			
@@ -137,8 +137,8 @@ class ColorClusturing:
 				for y in xrange(0,imageH):
 					for x in xrange(0,imageW):
 						for z in xrange(0,len(assignNewArray[t])):			
-							if (imageArray[x,y] == assignNewArray[t][z]):
-								outputArray[x,y] = [rColor, gColor, bColor]
+							if (imageArray[y, x] == assignNewArray[t][z]):
+								outputArray[y,x] = [rColor, gColor, bColor]
 								x_ = x
 								y_ = y
 								counter += 1
@@ -146,14 +146,14 @@ class ColorClusturing:
 				for z in xrange(0,len(assignNewArray[t])):
 					tempList.append(assignNewArray[t][z])
 
-				finalResult.append([inputArray[x_,y_], counter])
+				finalResult.append([inputArray[y_,x_], counter])
 
 	# Algorithm previous position checking code
 	def processed_location(self, tempX, tempY):
 		if(tempX >= 0) and (tempX < self.widthMatrix) and (tempY >= 0) and (tempY < self.heightMatrix):
-			if(self.inputArray[tempX, tempY] == self.currentValue):
-				if(self.assignArray[tempX, tempY] != 0):
-					self.assignArray[self.xIndex, self.yIndex] = self.assignArray[tempX, tempY]
+			if(self.inputArray[tempY, tempX] == self.currentValue):
+				if(self.assignArray[tempY, tempX] != 0):
+					self.assignArray[self.yIndex, self.xIndex] = self.assignArray[tempY, tempX]
 					self.currentAssigned = 1
 					return 1
 		return 0
@@ -161,28 +161,28 @@ class ColorClusturing:
 	# Algorithm non allocated position checking code
 	def other_location(self, tempX, tempY):
 		if(tempX >= 0) and (tempX < self.widthMatrix) and (tempY >= 0) and (tempY < self.heightMatrix):
-			if(self.inputArray[tempX, tempY] == self.currentValue):
-				if(self.assignArray[self.xIndex, self.yIndex] == 0):
-					if(self.assignArray[tempX, tempY] == 0):
+			if(self.inputArray[tempY, tempX] == self.currentValue):
+				if(self.assignArray[self.yIndex, self.xIndex] == 0):
+					if(self.assignArray[tempY, tempX] == 0):
 						self.assignCounter += 1
-						self.assignArray[tempX, tempY] 	 = self.assignCounter
-						self.assignArray[self.xIndex, self.yIndex] = self.assignCounter
+						self.assignArray[tempY, tempX] 	 = self.assignCounter
+						self.assignArray[self.yIndex, self.xIndex] = self.assignCounter
 						self.currentAssigned = 1
 						return 1	
 
 					else:
-						self.assignArray[self.xIndex, self.yIndex] = self.assignArray[tempX, tempY]
+						self.assignArray[self.yIndex, self.xIndex] = self.assignArray[tempY, tempX]
 						self.currentAssigned = 1
 						return 1		
 				
-				elif(self.assignArray[self.xIndex, self.yIndex] != self.assignArray[tempX, tempY]):
-					if(self.assignArray[tempX, tempY] == 0):
-						self.assignArray[tempX, tempY] = self.assignArray[self.xIndex, self.yIndex]
+				elif(self.assignArray[self.yIndex, self.xIndex] != self.assignArray[tempY, tempX]):
+					if(self.assignArray[tempY, tempX] == 0):
+						self.assignArray[tempY, tempX] = self.assignArray[self.yIndex, self.xIndex]
 						self.currentAssigned = 1
 						return 1	
 
 					else:
-						self.insert_match(self.assignArray[tempX, tempY], self.assignArray[self.xIndex, self.yIndex])
+						self.insert_match(self.assignArray[tempY, tempX], self.assignArray[self.yIndex, self.xIndex])
 						self.currentAssigned = 1
 						return 1
 		return 0	
@@ -249,20 +249,27 @@ def load_value_mattrix(imageW, imageH, value):
 def file_load():
 	global inputArray
 	global arrayWidth, arrayHeight
-
-	fileLocation = raw_input("count-areas ") 	
-	print '\033[{}C\033[1A'.format(12 + len(fileLocation)),
-	arrayHeightTemp = raw_input("--shape ") 	
-	print '\033[{}C\033[1A'.format(12 + len(fileLocation)+ 8 + len(str(arrayHeight))+ 1),
-	arrayWidthTemp = raw_input(",") 	
-
-	arrayHeight = int(arrayHeightTemp)
-	arrayWidth = int(arrayWidthTemp)
-	inputArray = np.zeros(shape=(arrayWidth, arrayHeight))
+	#count-areas <input-filename> --shape <height>,<width>"
+	#count-areas data/sample.bin --shape 256,256
+	rawData = raw_input("") 	
+	rawDataList  = rawData.split()
+	fileLocation = rawDataList[1]
+	arrayList    = rawDataList[3].split(',') 
+	arrayHeight = int(arrayList[0])
+	arrayWidth  = int(arrayList[1])
+	# print(rawData)
+	# print(rawDataList)
+	# print(fileLocation)
+	# print(arrayList)
+	# print(arrayHeight)
+	# print(arrayWidth)
+	inputArray  = np.zeros(shape=(arrayHeight, arrayWidth))
 	
+	# exists = os.path.isfile(fileLocation)
 	exists = os.path.isfile(fileLocation)
 	# exists = True 				#only for test
 	if exists == False:
+		print ("File Error")
 		exit()
 	
 	else:
@@ -270,7 +277,7 @@ def file_load():
 			for y in xrange(0, arrayHeight):	
 				for x in xrange(0, arrayWidth):
 					byte = f.read(1)
-					inputArray[x, y] = ord(byte)
+					inputArray[y, x] = ord(byte)
 		return inputArray	
 
 #To view a block of matrix
