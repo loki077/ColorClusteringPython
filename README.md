@@ -20,13 +20,13 @@ Prerequisit:
 Instrution to execute file:
 	Make sure the prerequisite is completed
 	The main code is in ../ColorClusteringPython/main
+	Save the .bin file in the main folder
 	file name main.py
 	To run the code:
-		# cd .../ColorClusteringPython/main
-		# python2.7 main.py
-		>count-areas <file full Location> 							//after typing location press enter
-		>count-areas <file full Location> --shape <Height> 			//after typing height press enter
-		>count-areas <file full Location> --shape <Height>,<Width> 	//after typing width press enter
+		# cd .../ColorClusteringPython/main/dist/count-areas
+		# ./count-areas <sub Location> --shape <Height>,<Width>
+		>count-areas <sub Location> --shape <Height>,<Width> 	
+		eg : count-areas data/sample.bin --shape 256,256
 	if everything is perfect output will be generated or else code will exit.
 
 -------------------------------------------------------------------
